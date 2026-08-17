@@ -1,1 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+
+:root {
+  --ink: #14201C;
+  --parchment: #EFEDE4;
+  --parchment-line: #D9D6C8;
+  --text: #1B211D;
+  --text-muted: #6B7268;
+  --accent: #C9852C;
+  --error: #B5482F;
+
+  font-family: 'Manrope', sans-serif;
+}
+
+.ledger-display {
+  font-family: 'Fraunces', serif;
+}
+
+.ledger-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--parchment-line);
+  transition: border-color 0.2s ease;
+  color: var(--text);
+}
+
+.ledger-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.ledger-input::placeholder {
+  color: #A9A79A;
+}
+
+.ledger-btn {
+  background: var(--ink);
+  color: var(--parchment);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.ledger-btn:hover {
+  background: var(--accent);
+}
+
+.ledger-btn:active {
+  transform: scale(0.98);
+}
+
+.ledger-card {
+  background: var(--parchment);
+  border: 1px solid var(--parchment-line);
+}
