@@ -1,8 +1,39 @@
-import { ArrowRight } from "lucide-react";
+"use client";
+
+
+import { createClient } from "@/lib/supabase/client";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 export default function LoginPage() {
+
+  const supabase = createClient();
+
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  function validate() {
+    const errors : {
+      email?: string,
+      password?: string,
+    } = {};
+
+    if (!values.email.trim()) {
+      errors.email = "Email is required";
+    }
+
+    if (!values.password.trim()) {
+      errors.password = "Password is required";
+    }
+
+    return errors;
+  }
+
+
   return (
-    <main
+    <div
       className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8"
       style={{ background: "var(--parchment)" }}
     >
@@ -44,6 +75,8 @@ export default function LoginPage() {
                 name="email"
                 placeholder="Enter your email address"
                 autoComplete="email"
+                value={values.email}
+                // onChange={handleChange}
                 className="
                   ledger-input
                   w-full
@@ -131,6 +164,6 @@ export default function LoginPage() {
           Pharmacy Billing Management System
         </p>
       </div>
-    </main>
+    </div>
   );
 }
