@@ -15,7 +15,7 @@ export default function LoginPage() {
               className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]"
               style={{ color: "var(--accent)" }}
             >
-              Welcome 
+              Welcome
             </p>
 
             <h1
@@ -24,27 +24,26 @@ export default function LoginPage() {
             >
               Sign in to your account
             </h1>
-
           </div>
 
           {/* Form */}
           <form className="flex flex-col gap-5">
-            {/* Username */}
+            {/* Email */}
             <div>
               <label
-                htmlFor="username"
+                htmlFor="email"
                 className="mb-2 block text-[15px] font-semibold"
                 style={{ color: "var(--text)" }}
               >
-                Username
+                Email
               </label>
 
               <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Enter your username"
-                autoComplete="username"
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email address"
+                autoComplete="email"
                 className="
                   ledger-input
                   w-full
