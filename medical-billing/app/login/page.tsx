@@ -1,39 +1,99 @@
 "use client";
 
-
-import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+type FormErrors = {
+  email?: string;
+  password?: string;
+  form?: string;
+};
 
 export default function LoginPage() {
-
   const supabase = createClient();
 
-  const [values, setValues] = useState({
+  const [values, setValues] = useState<FormValues>({
     email: "",
     password: "",
   });
 
-  function validate() {
-    const errors : {
-      email?: string,
-      password?: string,
-    } = {};
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-    if (!values.email.trim()) {
-      errors.email = "Email is required";
-    }
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
 
-    if (!values.password.trim()) {
-      errors.password = "Password is required";
-    }
+    setValues((current) => ({
+      ...current,
+      [name]: value,
+    }));
 
-    return errors;
+    // Clear the field error while the user is correcting it.
+    setErrors((current) => ({
+      ...current,
+      [name]: undefined,
+      form: undefined,
+    }));
   }
 
+  function validate(): FormErrors {
+    const validationErrors: FormErrors = {};
+
+    if (!values.email.trim()) {
+      validationErrors.email = "Email is required.";
+    }
+
+    if (!values.password) {
+      validationErrors.password = "Password is required.";
+    }
+
+    return validationErrors;
+  }
+
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    e.preventDefault();
+
+    // Clear previous form-level error.
+    setErrors({});
+
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setSubmitting(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email.trim(),
+      password: values.password,
+    });
+
+    if (error) {
+      setErrors({
+        form: "Invalid email or password.",
+      });
+
+      setSubmitting(false);
+      return;
+    }
+
+    // Authentication succeeded.
+    window.location.href = "/dashboard";
+  }
 
   return (
-    <div
+    <main
       className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8"
       style={{ background: "var(--parchment)" }}
     >
@@ -58,7 +118,11 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="flex flex-col gap-5">
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             {/* Email */}
             <div>
               <label
@@ -76,7 +140,10 @@ export default function LoginPage() {
                 placeholder="Enter your email address"
                 autoComplete="email"
                 value={values.email}
-                // onChange={handleChange}
+                onChange={handleChange}
+                disabled={submitting}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 className="
                   ledger-input
                   w-full
@@ -90,8 +157,21 @@ export default function LoginPage() {
                   duration-200
                   placeholder:text-gray-400
                   focus:ring-2
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
                 "
               />
+
+              {errors.email && (
+                <p
+                  id="email-error"
+                  className="mt-1.5 text-xs"
+                  style={{ color: "var(--error)" }}
+                  role="alert"
+                >
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* Password */}
@@ -104,32 +184,96 @@ export default function LoginPage() {
                 Password
               </label>
 
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                className="
-                  ledger-input
-                  w-full
-                  rounded-lg
-                  px-4
-                  py-3
-                  text-sm
-                  font-medium
-                  outline-none
-                  transition-all
-                  duration-200
-                  placeholder:text-gray-400
-                  focus:ring-2
-                "
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  value={values.password}
+                  onChange={handleChange}
+                  disabled={submitting}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={
+                    errors.password ? "password-error" : undefined
+                  }
+                  className="
+                    ledger-input
+                    w-full
+                    rounded-lg
+                    px-4
+                    py-3
+                    pr-11
+                    text-sm
+                    font-medium
+                    outline-none
+                    transition-all
+                    duration-200
+                    placeholder:text-gray-400
+                    focus:ring-2
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  disabled={submitting}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="
+                    absolute
+                    right-3
+                    top-1/2
+                    -translate-y-1/2
+                    rounded-md
+                    p-1
+                    transition-colors
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+                  "
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {showPassword ? (
+                    <EyeOff size={17} strokeWidth={2} />
+                  ) : (
+                    <Eye size={17} strokeWidth={2} />
+                  )}
+                </button>
+              </div>
+
+              {errors.password && (
+                <p
+                  id="password-error"
+                  className="mt-1.5 text-xs"
+                  style={{ color: "var(--error)" }}
+                  role="alert"
+                >
+                  {errors.password}
+                </p>
+              )}
             </div>
+
+            {/* Authentication Error */}
+            {errors.form && (
+              <p
+                className="rounded-lg px-3 py-2 text-sm"
+                style={{
+                  color: "var(--error)",
+                  background:
+                    "color-mix(in srgb, var(--error) 8%, transparent)",
+                }}
+                role="alert"
+              >
+                {errors.form}
+              </p>
+            )}
 
             {/* Login Button */}
             <button
               type="submit"
+              disabled={submitting}
               className="
                 ledger-btn
                 mt-2
@@ -148,10 +292,14 @@ export default function LoginPage() {
                 duration-200
                 hover:-translate-y-0.5
                 active:translate-y-0
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+                disabled:hover:translate-y-0
               "
             >
-              <span>Sign in</span>
-              <ArrowRight size={16} strokeWidth={2} />
+              <span>{submitting ? "Signing in..." : "Sign in"}</span>
+
+              {!submitting && <ArrowRight size={16} strokeWidth={2} />}
             </button>
           </form>
         </div>
@@ -164,6 +312,6 @@ export default function LoginPage() {
           Pharmacy Billing Management System
         </p>
       </div>
-    </div>
+    </main>
   );
 }
